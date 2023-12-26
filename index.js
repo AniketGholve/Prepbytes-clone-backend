@@ -44,17 +44,31 @@ app.post("/login", async (req, res) => {
 
 app.post("/create-checkout-session", async (req, res) => {
     const { products } = req.body;
-    const lineItems = products.map((product) => ({
+    console.log(products)
+    const lineItems = [products].map((product) => ({
         price_data: {
-            currency: "usd",
+            currency: "inr",
             product_data: {
                 name: product.name,
                 images: [product.url]
             },
-            unit_amount: product.price.split("$")[1] * 100
+            unit_amount: product.price*100
         },
         quantity: product.quantity
     }))
+
+    console.log(lineItems)
+    // const lineItems = [{
+    //     price_data: {
+    //         currency: "usd",
+    //         product_data: {
+    //             name: products.name,
+    //             images: [products.url]
+    //         },
+    //         unit_amount: products.price.split("$")[1] * 100
+    //     },
+    //     quantity: products.quantity
+    // }]
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: lineItems,
