@@ -51,19 +51,19 @@ app.post("/create-checkout-session", async (req, res) => {
                 name: product.name,
                 images: [product.url]
             },
-            unit_amount: product.price.split("$")[1]*100
+            unit_amount: product.price.split("$")[1] * 100
         },
-        quantity:product.quantity
+        quantity: product.quantity
     }))
     const session = await stripe.checkout.sessions.create({
-        payment_method_types:["card"],
+        payment_method_types: ["card"],
         line_items: lineItems,
         mode: 'payment',
         success_url: `https://ecommerce-react01.netlify.app/success`,
         cancel_url: `https://ecommerce-react01.netlify.app/cartdetails`,
     });
 
-    res.json({id:session.id})
+    res.json({ id: session.id })
 })
 app.listen(3000, async () => {
     try {
