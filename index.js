@@ -56,28 +56,25 @@ app.post("/create-checkout-session", async (req, res) => {
         },
         quantity: product.quantity
     }))
-
-    console.log(lineItems)
-    // const lineItems = [{
-    //     price_data: {
-    //         currency: "usd",
-    //         product_data: {
-    //             name: products.name,
-    //             images: [products.url]
-    //         },
-    //         unit_amount: products.price.split("$")[1] * 100
-    //     },
-    //     quantity: products.quantity
-    // }]
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: lineItems,
         mode: 'payment',
-        success_url: `https://ecommerce-react01.netlify.app/success`,
-        cancel_url: `https://ecommerce-react01.netlify.app/cartdetails`,
+        success_url: `http://localhost:5173/master-competitive-programming`,
+        cancel_url: `http://localhost:5173/master-competitive-programming`,
     });
 
     res.json({ id: session.id })
+})
+
+app.put("/addCourseToUser",async(req ,res)=>{
+    let convertedJson=req.body
+    let checkUser = await userCollection.findOne({ "email": convertedJson.email })
+    console.log(checkUser)
+    // if (!checkUser) {
+    //     userCollection.updateOne(convertedJson);
+    //     return res.status(200).send({ msg: "User Successfully registered" });
+    // }
 })
 app.listen(3000, async () => {
     try {
