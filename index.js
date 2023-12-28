@@ -41,10 +41,15 @@ app.post("/login", async (req, res) => {
         return res.send({ err: "Invalid User" })
     }
 })
-
+let purchaseCourse={}
 app.post("/create-checkout-session", async (req, res) => {
     const { products } = req.body;
-    console.log(products)
+    const { email } = req.body
+    console.log(req.body.email)
+    if (email ===undefined) {
+        res.json({ "err": "user email missing" })
+    }
+    purchaseCourse=products
     const lineItems = [products].map((product) => ({
         price_data: {
             currency: "inr",
@@ -52,7 +57,7 @@ app.post("/create-checkout-session", async (req, res) => {
                 name: product.name,
                 images: [product.url]
             },
-            unit_amount: product.price*100
+            unit_amount: product.price * 100
         },
         quantity: product.quantity
     }))
@@ -60,21 +65,49 @@ app.post("/create-checkout-session", async (req, res) => {
         payment_method_types: ["card"],
         line_items: lineItems,
         mode: 'payment',
-        success_url: `http://localhost:5173/master-competitive-programming`,
+        success_url: "http://localhost:3000/order/success?session_id={CHECKOUT_SESSION_ID}&email=" + email,
         cancel_url: `http://localhost:5173/master-competitive-programming`,
     });
 
-    res.json({ id: session.id })
+    res.json({ id: session.id, "session": session })
 })
 
-app.put("/addCourseToUser",async(req ,res)=>{
-    let convertedJson=req.body
-    let checkUser = await userCollection.findOne({ "email": convertedJson.email })
-    console.log(checkUser)
-    // if (!checkUser) {
-    //     userCollection.updateOne(convertedJson);
-    //     return res.status(200).send({ msg: "User Successfully registered" });
-    // }
+app.get("/order/success", async (req, res) => {
+    let email = req.query.email
+    let checkUser = await userCollection.findOne({ "email": email })
+    if (checkUser) {
+        let data={}
+        console.log(purchaseCourse)
+        checkUser.course? 
+         data={
+            ...checkUser,
+            "course":[...checkUser.course ,purchaseCourse]
+        }  : data={
+            ...checkUser,
+            "course":[purchaseCourse]
+        }   
+        console.log(data)
+        try{
+            await userCollection.updateOne({ "email": email }, { $push: { "course": purchaseCourse } }, (err, result) => {
+                if (err) {
+                    console.log(err);
+                } else {
+                    console.log(result);
+                }
+            });
+            
+        }
+        catch(e){
+            console.log(e)
+        }
+    }
+    res.redirect("http://localhost:5173/")
+})
+
+app.post("/getCourseOfUser",async(req,res)=>{
+    let email=req.body.email;
+    let checkUser = await userCollection.findOne({ "email": email })
+    res.json(checkUser)
 })
 app.listen(3000, async () => {
     try {
