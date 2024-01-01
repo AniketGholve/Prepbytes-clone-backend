@@ -41,15 +41,15 @@ app.post("/login", async (req, res) => {
         return res.send({ err: "Invalid User" })
     }
 })
-let purchaseCourse={}
+let purchaseCourse = {}
 app.post("/create-checkout-session", async (req, res) => {
     const { products } = req.body;
     const { email } = req.body
     console.log(req.body.email)
-    if (email ===undefined) {
+    if (email === undefined) {
         res.json({ "err": "user email missing" })
     }
-    purchaseCourse=products
+    purchaseCourse = products
     const lineItems = [products].map((product) => ({
         price_data: {
             currency: "inr",
@@ -65,8 +65,8 @@ app.post("/create-checkout-session", async (req, res) => {
         payment_method_types: ["card"],
         line_items: lineItems,
         mode: 'payment',
-        success_url: "http://localhost:3000/order/success?session_id={CHECKOUT_SESSION_ID}&email=" + email,
-        cancel_url: `http://localhost:5173/master-competitive-programming`,
+        success_url: "https://prepbytes-clone-yczy.onrender.com/order/success?session_id={CHECKOUT_SESSION_ID}&email=" + email,
+        cancel_url: `https://prepbytes-clone-1.netlify.app/master-competitive-programming`,
     });
 
     res.json({ id: session.id, "session": session })
@@ -76,18 +76,18 @@ app.get("/order/success", async (req, res) => {
     let email = req.query.email
     let checkUser = await userCollection.findOne({ "email": email })
     if (checkUser) {
-        let data={}
+        let data = {}
         console.log(purchaseCourse)
-        checkUser.course? 
-         data={
-            ...checkUser,
-            "course":[...checkUser.course ,purchaseCourse]
-        }  : data={
-            ...checkUser,
-            "course":[purchaseCourse]
-        }   
+        checkUser.course ?
+            data = {
+                ...checkUser,
+                "course": [...checkUser.course, purchaseCourse]
+            } : data = {
+                ...checkUser,
+                "course": [purchaseCourse]
+            }
         console.log(data)
-        try{
+        try {
             await userCollection.updateOne({ "email": email }, { $push: { "course": purchaseCourse } }, (err, result) => {
                 if (err) {
                     console.log(err);
@@ -95,17 +95,17 @@ app.get("/order/success", async (req, res) => {
                     console.log(result);
                 }
             });
-            
+
         }
-        catch(e){
+        catch (e) {
             console.log(e)
         }
     }
-    res.redirect("http://localhost:5173/")
+    res.redirect("https://prepbytes-clone-1.netlify.app/dashboard")
 })
 
-app.post("/getCourseOfUser",async(req,res)=>{
-    let email=req.body.email;
+app.post("/getCourseOfUser", async (req, res) => {
+    let email = req.body.email;
     let checkUser = await userCollection.findOne({ "email": email })
     res.json(checkUser)
 })
