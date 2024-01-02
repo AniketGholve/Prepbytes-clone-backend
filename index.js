@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt')
 const saltRoute = 10;
 const { conn, dbCreation } = require('./config/db');
 const userCollection = dbCreation.collection("userData");
+const enquiry = dbCreation.collection("enquiry");
 let data = []
 app.use(cors({
     origin: "*"
@@ -108,6 +109,17 @@ app.post("/getCourseOfUser", async (req, res) => {
     let email = req.body.email;
     let checkUser = await userCollection.findOne({ "email": email })
     res.json(checkUser)
+})
+app.post("/sendEnquiryData", async (req, res) => {
+    try{
+        console.log(req.body)
+        await enquiry.insertOne(req.body)
+        res.status(200).send("Enquiry Send to host")
+    }catch(e){
+        res.status(500)
+    }
+
+
 })
 app.listen(3000, async () => {
     try {
